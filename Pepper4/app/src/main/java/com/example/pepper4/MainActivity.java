@@ -11,20 +11,25 @@ import com.aldebaran.qi.sdk.QiContext;
 import com.aldebaran.qi.sdk.QiSDK;
 import com.aldebaran.qi.sdk.RobotLifecycleCallbacks;
 import com.aldebaran.qi.sdk.builder.GoToBuilder;
+import com.aldebaran.qi.sdk.builder.LocalizeAndMapBuilder;
 import com.aldebaran.qi.sdk.builder.LookAtBuilder;
 import com.aldebaran.qi.sdk.builder.SayBuilder;
 import com.aldebaran.qi.sdk.builder.TransformBuilder;
 import com.aldebaran.qi.sdk.design.activity.RobotActivity;
 import com.aldebaran.qi.sdk.design.activity.conversationstatus.SpeechBarDisplayStrategy;
 import com.aldebaran.qi.sdk.object.actuation.Actuation;
+import com.aldebaran.qi.sdk.object.actuation.ExplorationMap;
 import com.aldebaran.qi.sdk.object.actuation.Frame;
 import com.aldebaran.qi.sdk.object.actuation.FreeFrame;
 import com.aldebaran.qi.sdk.object.actuation.GoTo;
+import com.aldebaran.qi.sdk.object.actuation.LocalizeAndMap;
 import com.aldebaran.qi.sdk.object.actuation.LookAt;
 import com.aldebaran.qi.sdk.object.actuation.LookAtMovementPolicy;
 import com.aldebaran.qi.sdk.object.actuation.Mapping;
 import com.aldebaran.qi.sdk.object.conversation.Say;
 import com.aldebaran.qi.sdk.object.geometry.Transform;
+import com.aldebaran.qi.sdk.object.power.FlapSensor;
+import com.aldebaran.qi.sdk.object.power.Power;
 import com.softbankrobotics.pepperpointat.PointAtAnimator;
 
 public class MainActivity extends RobotActivity implements RobotLifecycleCallbacks {
@@ -39,6 +44,10 @@ public class MainActivity extends RobotActivity implements RobotLifecycleCallbac
     private Frame robotFrame;
     private Future<Void> lookAtFuture;
     private PointAtAnimator pointAtAnimator;
+    private LocalizeAndMap localizeAndMap;
+    private Future localizingAndMapping;
+    private Power power;
+    private FlapSensor chargingFlap;
 
     //Dit wordt geladen als de app wordt gecreeerd
     @Override
@@ -67,8 +76,14 @@ public class MainActivity extends RobotActivity implements RobotLifecycleCallbac
         //Dit geeft de locatie van de robot door
         robotFrame = actuation.robotFrame();
         //pointAtAnimator = PointAtAnimator(qiContext);
-        //een presentatie geven
-        presentation();
+        power = qiContext1.getPower();
+        chargingFlap = power.getChargingFlap();
+        sayText("1");
+        isFlapOpen();
+        mapStart();
+        sayText("2");
+        mapEnd();
+        sayText("3");
     }
 
 
@@ -190,6 +205,24 @@ public class MainActivity extends RobotActivity implements RobotLifecycleCallbac
             }
         };
         runOnUiThread(runnable);
+    }
+
+    private void mapStart(){
+        localizeAndMap = LocalizeAndMapBuilder.with(qiContext1).build();
+        localizingAndMapping = localizeAndMap.async().run();
+    }
+
+    private void mapEnd(){
+        localizingAndMapping.requestCancellation();
+        ExplorationMap explorationMap = localizeAndMap.dumpMap();
+        String mapData = explorationMap.serialize();
+    }
+
+    private boolean isFlapOpen(){
+        boolean isFlapOpened = chargingFlap.async().getState().getValue().getOpen();
+        String isFlapOpened1 = Boolean.toString(isFlapOpen());
+        Log.i(TAG, isFlapOpened1);
+        return isFlapOpened;
     }
 
 
