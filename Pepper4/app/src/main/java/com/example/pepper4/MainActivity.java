@@ -221,7 +221,7 @@ public class MainActivity extends RobotActivity implements RobotLifecycleCallbac
     private boolean isFlapOpen(){
         boolean isFlapOpened = chargingFlap.async().getState().getValue().getOpen();
         String isFlapOpened1 = Boolean.toString(isFlapOpen());
-        Log.i(TAG, isFlapOpened1);
+        sayText(isFlapOpened1);
         return isFlapOpened;
     }
 
