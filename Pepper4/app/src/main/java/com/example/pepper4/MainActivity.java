@@ -27,6 +27,7 @@ import com.aldebaran.qi.sdk.object.actuation.LocalizationStatus;
 import com.aldebaran.qi.sdk.object.actuation.LocalizeAndMap;
 import com.aldebaran.qi.sdk.object.actuation.LookAt;
 import com.aldebaran.qi.sdk.object.actuation.LookAtMovementPolicy;
+import com.aldebaran.qi.sdk.object.actuation.MapTopGraphicalRepresentation;
 import com.aldebaran.qi.sdk.object.actuation.Mapping;
 import com.aldebaran.qi.sdk.object.conversation.Say;
 import com.aldebaran.qi.sdk.object.geometry.Transform;
