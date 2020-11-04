@@ -4,6 +4,7 @@ package com.example.pepper4;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 
 import com.aldebaran.qi.Future;
@@ -22,14 +23,13 @@ import com.aldebaran.qi.sdk.object.actuation.ExplorationMap;
 import com.aldebaran.qi.sdk.object.actuation.Frame;
 import com.aldebaran.qi.sdk.object.actuation.FreeFrame;
 import com.aldebaran.qi.sdk.object.actuation.GoTo;
+import com.aldebaran.qi.sdk.object.actuation.LocalizationStatus;
 import com.aldebaran.qi.sdk.object.actuation.LocalizeAndMap;
 import com.aldebaran.qi.sdk.object.actuation.LookAt;
 import com.aldebaran.qi.sdk.object.actuation.LookAtMovementPolicy;
 import com.aldebaran.qi.sdk.object.actuation.Mapping;
 import com.aldebaran.qi.sdk.object.conversation.Say;
 import com.aldebaran.qi.sdk.object.geometry.Transform;
-import com.aldebaran.qi.sdk.object.power.FlapSensor;
-import com.aldebaran.qi.sdk.object.power.Power;
 import com.softbankrobotics.pepperpointat.PointAtAnimator;
 
 public class MainActivity extends RobotActivity implements RobotLifecycleCallbacks {
@@ -46,8 +46,7 @@ public class MainActivity extends RobotActivity implements RobotLifecycleCallbac
     private PointAtAnimator pointAtAnimator;
     private LocalizeAndMap localizeAndMap;
     private Future localizingAndMapping;
-    private Power power;
-    private FlapSensor chargingFlap;
+    private ExplorationMap explorationMap;
 
     //Dit wordt geladen als de app wordt gecreeerd
     @Override
@@ -57,7 +56,6 @@ public class MainActivity extends RobotActivity implements RobotLifecycleCallbac
         setSpeechBarDisplayStrategy(SpeechBarDisplayStrategy.OVERLAY);
         //dit koppelt de ui
         setContentView(R.layout.activity_main);
-        image = (ImageView) findViewById(R.id.splashImageView);
     }
 
     //Dit wordt geladen als de app is afgesloten
@@ -76,14 +74,7 @@ public class MainActivity extends RobotActivity implements RobotLifecycleCallbac
         //Dit geeft de locatie van de robot door
         robotFrame = actuation.robotFrame();
         //pointAtAnimator = PointAtAnimator(qiContext);
-        power = qiContext1.getPower();
-        chargingFlap = power.getChargingFlap();
-        sayText("1");
-        isFlapOpen();
         mapStart();
-        sayText("2");
-        mapEnd();
-        sayText("3");
     }
 
 
@@ -209,20 +200,20 @@ public class MainActivity extends RobotActivity implements RobotLifecycleCallbac
 
     private void mapStart(){
         localizeAndMap = LocalizeAndMapBuilder.with(qiContext1).build();
+        localizeAndMap.async().run();
+        localizeAndMap.addOnStatusChangedListener(localizationStatus -> {
+            if (localizationStatus == LocalizationStatus.LOCALIZED) {
+                // Stop the action.
+                localizingAndMapping.requestCancellation();
+                // Dump the map for future use by a Localize action.
+                explorationMap = localizeAndMap.dumpMap();
+            }
+        });
         localizingAndMapping = localizeAndMap.async().run();
     }
 
-    private void mapEnd(){
-        localizingAndMapping.requestCancellation();
-        ExplorationMap explorationMap = localizeAndMap.dumpMap();
-        String mapData = explorationMap.serialize();
-    }
-
-    private boolean isFlapOpen(){
-        boolean isFlapOpened = chargingFlap.async().getState().getValue().getOpen();
-        String isFlapOpened1 = Boolean.toString(isFlapOpen());
-        sayText(isFlapOpened1);
-        return isFlapOpened;
+    private void mapPrinter(){
+        
     }
 
 
