@@ -1,6 +1,8 @@
 package com.example.pepper4;
 
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -31,7 +33,10 @@ import com.aldebaran.qi.sdk.object.actuation.MapTopGraphicalRepresentation;
 import com.aldebaran.qi.sdk.object.actuation.Mapping;
 import com.aldebaran.qi.sdk.object.conversation.Say;
 import com.aldebaran.qi.sdk.object.geometry.Transform;
+import com.aldebaran.qi.sdk.object.image.EncodedImage;
 import com.softbankrobotics.pepperpointat.PointAtAnimator;
+
+import java.nio.ByteBuffer;
 
 public class MainActivity extends RobotActivity implements RobotLifecycleCallbacks {
 
@@ -210,11 +215,30 @@ public class MainActivity extends RobotActivity implements RobotLifecycleCallbac
                 explorationMap = localizeAndMap.dumpMap();
             }
         });
+        Log.i(TAG, "voor mapprinter");
         localizingAndMapping = localizeAndMap.async().run();
+
+        Log.i(TAG, "voor mapprinter2 ");
+        mapToBitmap(explorationMap);
+        Log.i(TAG, "na mapprinter");
     }
 
-    private void mapPrinter(){
-        
+    private Bitmap mapToBitmap(ExplorationMap explorationMap) {
+        // Get the ByteBuffer containing the map graphical representation.
+        ByteBuffer byteBuffer = explorationMap.getTopGraphicalRepresentation().getImage().getData();
+        byteBuffer.rewind();
+        // Get the buffer size.
+        int size = byteBuffer.remaining();
+        // Transform the buffer to a ByteArray.
+        byte[] byteArray = new byte[size];
+        byteBuffer.get(byteArray);
+        // Transform the ByteArray to a Bitmap.
+        return BitmapFactory.decodeByteArray(byteArray, 0, size);
+    }
+
+    private void displayMap(Bitmap bitmap) {
+        // Set the ImageView bitmap.
+        image.setImageBitmap(bitmap);
     }
 
 
