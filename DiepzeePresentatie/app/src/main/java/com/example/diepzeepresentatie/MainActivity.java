@@ -6,10 +6,12 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import com.aldebaran.qi.Future;
 import com.aldebaran.qi.sdk.QiContext;
 import com.aldebaran.qi.sdk.QiSDK;
 import com.aldebaran.qi.sdk.RobotLifecycleCallbacks;
 import com.aldebaran.qi.sdk.builder.GoToBuilder;
+import com.aldebaran.qi.sdk.builder.HolderBuilder;
 import com.aldebaran.qi.sdk.builder.LookAtBuilder;
 import com.aldebaran.qi.sdk.builder.SayBuilder;
 import com.aldebaran.qi.sdk.builder.TransformBuilder;
@@ -23,6 +25,8 @@ import com.aldebaran.qi.sdk.object.actuation.LookAtMovementPolicy;
 import com.aldebaran.qi.sdk.object.actuation.Mapping;
 import com.aldebaran.qi.sdk.object.conversation.Say;
 import com.aldebaran.qi.sdk.object.geometry.Transform;
+import com.aldebaran.qi.sdk.object.holder.AutonomousAbilitiesType;
+import com.aldebaran.qi.sdk.object.holder.Holder;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -34,8 +38,12 @@ public class MainActivity extends RobotActivity implements RobotLifecycleCallbac
     QiContext qiContext;
     Say welcomeSay = null;
     GoTo welcomeGoto = null;
-    LookAt welcomeLookAt = null;
-    LookAt welcomeLookAt2 = null;
+    Say chairs = null;
+    Say tables = null;
+    Say doors = null;
+    Say wallart = null;
+    Say activefloor = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,10 +75,26 @@ public class MainActivity extends RobotActivity implements RobotLifecycleCallbac
 
     @Override
     public void onRobotFocusGained(QiContext qiContext) {
+        //Disable autonomous
+        Holder holder = HolderBuilder.with(qiContext)
+                .withAutonomousAbilities(
+                        AutonomousAbilitiesType.BASIC_AWARENESS
+                )
+                .build();
+
+        // Hold the abilities asynchronously.
+        Future<Void> holdFuture = holder.async().hold();
         // The robot focus is gained.
         this.qiContext = qiContext;
         welcomeSay = talk("hi, welcome to the presentation of the deapsea room. The presentation will be in English because I can not speak Dutch");
-        welcomeGoto = move(3,0);
+        //Naar voren
+        welcomeGoto = move(2.5,0);
+        //vertellen, hiertussen komt dus de trajectories
+        chairs = talk("In the right corner you will see some lovely green chairs!");
+        tables = talk("The wooden tables in this room can be used to do some work");
+        doors = talk("This room has 3 bright yellow doors, and one glass door behind me");
+        wallart = talk("On the walls you can see coral like art, it is meant to look like deapsee. Which is of course the name of this room");
+        activefloor = talk("Above us you can see a beamer, this is for learning purposes.");
     }
 
     @Override
@@ -89,8 +113,20 @@ public class MainActivity extends RobotActivity implements RobotLifecycleCallbac
     public void presentation(){
         //praten
         talkExe(welcomeSay, 0);
-        //3 meter naar voren
+        //lopen
         moveExe(welcomeGoto, 2000);
+        //praten, hiertussen komen dus de trajectories
+        //trajectories gebrabbel
+        //trajectories gebrabbel
+        //trajectories gebrabbel
+        //trajectories gebrabbel
+        //trajectories gebrabbel
+        talkExe(chairs, 8000);
+        talkExe(tables, 13000);
+        talkExe(doors, 20000);
+        talkExe(wallart, 27000);
+        talkExe(activefloor, 35000);
+
     }
 
     //Functie om een say aan te maken
